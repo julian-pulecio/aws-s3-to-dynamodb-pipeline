@@ -1,0 +1,11 @@
+service: aws-s3-to-dynamodb-pipeline
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+
+functions:
+  hello:
+    handler: handler.hello
