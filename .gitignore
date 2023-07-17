@@ -2,6 +2,8 @@
 .Python
 venv/
 build/
+node_modules/
+.pytest_cache/
 develop-eggs/
 dist/
 downloads/

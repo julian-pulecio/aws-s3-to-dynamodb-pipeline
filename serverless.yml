@@ -5,7 +5,46 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
+  environment:
+    S3_BUCKET: !Ref S3Bucket
 
 functions:
-  hello:
-    handler: handler.hello
+  populate_dynamodb_table:
+    handler: src.handler.populate_dynamodb_table
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: s3-to-dynamodb-bucket-julianpulecio
+        NotificationConfiguration: 
+          QueueConfigurations:
+            - Event : 's3:ObjectCreated:*'
+              Queue : !GetAtt [SQSQueue, Arn]
+      DependsOn: SQSQueue
+
+    SQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: s3-to-dynamodb-SQSQueue-julianpulecio
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt [DeadLetterQueue, Arn]
+          maxReceiveCount: 5
+
+    DeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: s3-to-dynamodb-SQSDeadLetterQueue-julianpulecio
+    
+    SqsPolicy: 
+      Type: AWS::SQS::QueuePolicy
+      Properties: 
+        Queues: 
+          - !Ref SQSQueue
+        PolicyDocument: 
+          Statement: 
+            - Effect: Allow
+              Principal: '*'
+              Action: 'SQS:*'
+              Resource: !GetAtt [SQSQueue, Arn]
