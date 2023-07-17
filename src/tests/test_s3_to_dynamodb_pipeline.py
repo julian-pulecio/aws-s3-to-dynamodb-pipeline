@@ -1,7 +1,9 @@
 import boto3
+import os
 from moto import mock_s3
 from pytest import fixture
-from src.handlers import populate_dynamodb_table
+from unittest import mock
+from src.handlers.create_handler import populate_dynamodb_table
 
 BUCKET_NAME = 'my_unique_test_bucket_17072023'
 S3_OBJECT_KEY = 'my_test_csv_file.csv'
@@ -22,16 +24,57 @@ S3_OBJECT_BODY = b""" "LatD", "LatM", "LatS", "NS", "LonD", "LonM", "LonS", "EW"
    33,   54,    0, "N",     98,   29,   23, "W", "Wichita Falls", TX
    37,   41,   23, "N",     97,   20,   23, "W", "Wichita", KS
    40,    4,   11, "N",     80,   43,   12, "W", "Wheeling", WV """
+SQS_EVENT = {
+    "Records": [
+        {
+            "eventVersion": "2.1",
+            "eventSource": "aws:s3",
+            "awsRegion": "us-east-1",
+            "eventTime": "2023-07-17T13:37:32.950Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {
+                "principalId": "A2728DOV14PPHG"
+            },
+            "requestParameters": {
+                "sourceIPAddress": "181.60.152.2"
+            },
+            "responseElements": {
+                "x-amz-request-id": "H9282X0J7EGCT8E6",
+                "x-amz-id-2": "FrGa2JJVz6nh16Ogiy/MOw8y7xh9pLAROta5h+IFRCl9Ria3gZN6m2VKCLNd1CQ9sAuhyC1A5jAX+uqLNzMkXknpGa1dRkvV"
+            },
+            "s3": {
+                "s3SchemaVersion": "1.0",
+                "configurationId": "b10129a0-f457-4dbd-a173-913442381913",
+                "bucket": {
+                    "name": BUCKET_NAME,
+                    "ownerIdentity": {
+                        "principalId": "A2728DOV14PPHG"
+                    },
+                    "arn": f'arn:aws:s3:::{BUCKET_NAME}'
+                },
+                "object": {
+                    "key": S3_OBJECT_KEY,
+                    "size": 8402,
+                    "eTag": "2dd39cb6de5ecc471fa37f1f2aac759f",
+                    "sequencer": "0064B5441CE79C81D2"
+                }
+            }
+        }
+    ]
+}
 
 
 @fixture
 def s3():
-    with mock_s3():
+    with mock_s3(), mock.patch.dict(os.environ, {"S3_BUCKET": f'BUCKET_NAME'}):
         s3 = boto3.client('s3')
         s3.create_bucket(Bucket=BUCKET_NAME)
-        s3.put_object(Bucket=BUCKET_NAME, Body=S3_OBJECT_BODY, Key=S3_OBJECT_KEY)
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Body=S3_OBJECT_BODY, Key=S3_OBJECT_KEY
+        )
         yield s3
 
 
 def test_success_response_on_csv_files(s3):
-    populate_dynamodb_table()
+    populate_dynamodb_table(event=SQS_EVENT, context='')
