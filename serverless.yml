@@ -2,6 +2,10 @@ service: aws-s3-to-dynamodb-pipeline
 
 frameworkVersion: '3'
 
+plugins:
+  - serverless-python-requirements
+  - serverless-iam-roles-per-function
+
 provider:
   name: aws
   runtime: python3.9
@@ -10,7 +14,22 @@ provider:
 
 functions:
   populate_dynamodb_table:
-    handler: src.handler.populate_dynamodb_table
+    handler: src.handlers.create_handler.populate_dynamodb_table
+    iamRoleStatementsName: lambda-s3-to-dynamo-role
+    iamRoleStatements:
+      - Effect: "Allow"        
+        Action: 
+          - s3:GetObject       
+          - s3:ListBucket
+        Resource: 
+          - !GetAtt [S3Bucket, Arn]
+          - !Sub "arn:aws:s3:::${S3Bucket}/*"
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - SQSQueue
+              - Arn
 
 resources:
   Resources:
@@ -48,3 +67,5 @@ resources:
               Principal: '*'
               Action: 'SQS:*'
               Resource: !GetAtt [SQSQueue, Arn]
+
+

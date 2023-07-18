@@ -11,7 +11,8 @@ from src.models.s3_object import S3_object
 def populate_dynamodb_table(event, context):
     result = flow(
         event,
-        get_s3_content
+        get_s3_event,
+        get_s3_object_content
     )
     print(result)
     if is_successful(result):
@@ -20,12 +21,17 @@ def populate_dynamodb_table(event, context):
         response = {'status_code':500, 'body':str(result.failure())}
     return response
 
-def get_s3_content(event:dict) -> dict:
+def get_s3_event(event:dict) -> dict:
+    for record in event.get('Records'):
+        s3_event = record.get('body')
+        return json.loads(s3_event)
+
+def get_s3_object_content(event:dict) -> dict:
     bucket_name = find_value_by_key(event, 'name')
     key_name = find_value_by_key(event, 'key')
     s3_bucket = S3_bucket(
         name=bucket_name
-    )    
+    )
     s3_object = S3_object(
         key=key_name,
         bucket=s3_bucket

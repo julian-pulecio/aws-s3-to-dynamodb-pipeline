@@ -26,6 +26,8 @@ class S3_object(S3):
 
     @safe(exceptions=(ClientError,))
     def get_content_from_bucket(self)-> dict:
+        print(self.bucket.name)
+        print(self.key)
         response = self.client.get_object(
             Bucket=self.bucket.name,
             Key=self.key
