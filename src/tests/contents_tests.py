@@ -1,4 +1,4 @@
-S3_OBJECT_BODY = b""" "LatD", "LatM", "LatS", "NS", "LonD", "LonM", "LonS", "EW", "City", "State"
+CITITES = b""" "LatD", "LatM", "LatS", "NS", "LonD", "LonM", "LonS", "EW", "City", "State"
    41,    5,   59, "N",     80,   39,    0, "W", "Youngstown", OH
    42,   52,   48, "N",     97,   23,   23, "W", "Yankton", SD
    46,   35,   59, "N",    120,   30,   36, "W", "Yakima", WA
@@ -127,3 +127,17 @@ S3_OBJECT_BODY = b""" "LatD", "LatM", "LatS", "NS", "LonD", "LonM", "LonS", "EW"
    40,   10,   48, "N",    122,   14,   23, "W", "Red Bluff", CA
    40,   19,   48, "N",     75,   55,   48, "W", "Reading", PA
    41,    9,   35, "N",     81,   14,   23, "W", "Ravenna", OH """
+
+TRAVELS = b""""Month", "1958", "1959", "1960"
+"JAN",  340,  360,  417
+"FEB",  318,  342,  391
+"MAR",  362,  406,  419
+"APR",  348,  396,  461
+"MAY",  363,  420,  472
+"JUN",  435,  472,  535
+"JUL",  491,  548,  622
+"AUG",  505,  559,  606
+"SEP",  404,  463,  508
+"OCT",  359,  407,  461
+"NOV",  310,  362,  390
+"DEC",  337,  405,  432"""

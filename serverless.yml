@@ -15,6 +15,7 @@ provider:
 functions:
   populate_dynamodb_table:
     handler: src.handlers.create_handler.populate_dynamodb_table
+    timeout: 600
     iamRoleStatementsName: lambda-s3-to-dynamo-role
     iamRoleStatements:
       - Effect: "Allow"        

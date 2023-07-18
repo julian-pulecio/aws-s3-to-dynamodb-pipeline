@@ -4,7 +4,7 @@ import re
 from moto import mock_s3
 from pytest import fixture
 from unittest import mock
-from src.tests.contents_tests import S3_OBJECT_BODY
+from src.tests.contents_tests import TRAVELS, CITITES
 from src.tests.events_test import SQS_EVENT
 from src.tests.events_test import S3_EVENT
 from src.handlers.create_handler import populate_dynamodb_table
@@ -19,7 +19,7 @@ def s3():
         s3.create_bucket(Bucket=BUCKET_NAME)
         s3.put_object(
             Bucket=BUCKET_NAME,
-            Body=S3_OBJECT_BODY, Key=S3_OBJECT_KEY
+            Body=TRAVELS, Key=S3_OBJECT_KEY
         )
         yield s3
 

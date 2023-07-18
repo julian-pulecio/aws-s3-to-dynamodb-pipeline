@@ -12,7 +12,8 @@ def populate_dynamodb_table(event, context):
     result = flow(
         event,
         get_s3_event,
-        get_s3_object_content
+        get_s3_object_content,
+        bind(create_dynamo_db_table)
     )
     print(result)
     if is_successful(result):
@@ -42,3 +43,13 @@ def get_s3_object_content(event:dict) -> dict:
         bind(lambda _:s3_object.get_content_from_bucket()),
     )
     return result
+
+def create_dynamo_db_table(s3_object_content:bytes):
+
+    content = s3_object_content.decode('utf-8')
+    headers = content.split('\n')[0].split(',')
+    print(headers)
+    for elem in headers:
+        print(elem)
+    
+    return Success('')
