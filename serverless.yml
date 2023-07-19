@@ -25,6 +25,14 @@ functions:
         Resource: 
           - !GetAtt [S3Bucket, Arn]
           - !Sub "arn:aws:s3:::${S3Bucket}/*"
+      - Effect: "Allow"        
+        Action: 
+          - dynamodb:CreateTable
+          - dynamodb:PutItem
+          - dynamodb:ListTables
+          - dynamodb:DescribeTable
+        Resource: 
+          - "*"
     events:
       - sqs:
           arn:

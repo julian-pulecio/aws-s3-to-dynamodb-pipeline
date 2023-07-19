@@ -6,13 +6,14 @@ from returns.pointfree import bind
 from src.utils.find_value_by_key import find_value_by_key
 from src.models.s3_bucket import S3_bucket
 from src.models.s3_object import S3_object
+from src.models.dynamodb_table import Dynamodb_table
 
 
 def populate_dynamodb_table(event, context):
     result = flow(
         event,
         get_s3_event,
-        get_s3_object_content,
+        get_s3_object,
         bind(create_dynamo_db_table)
     )
     print(result)
@@ -27,7 +28,7 @@ def get_s3_event(event:dict) -> dict:
         s3_event = record.get('body')
         return json.loads(s3_event)
 
-def get_s3_object_content(event:dict) -> dict:
+def get_s3_object(event:dict) -> dict:
     bucket_name = find_value_by_key(event, 'name')
     key_name = find_value_by_key(event, 'key')
     s3_bucket = S3_bucket(
@@ -40,16 +41,17 @@ def get_s3_object_content(event:dict) -> dict:
     result = flow(
         s3_bucket.exists(),
         bind(lambda _:s3_object.validate()),
-        bind(lambda _:s3_object.get_content_from_bucket()),
+        bind(lambda _:s3_object.set_content_from_bucket()),
+        bind(lambda _:Success(s3_object)),
     )
     return result
 
-def create_dynamo_db_table(s3_object_content:bytes):
-
-    content = s3_object_content.decode('utf-8')
-    headers = content.split('\n')[0].split(',')
-    print(headers)
-    for elem in headers:
-        print(elem)
-    
-    return Success('')
+def create_dynamo_db_table(s3_object:S3_object):
+    dynamodb_table = Dynamodb_table(
+        name=s3_object.key
+    )
+    result = flow(
+        dynamodb_table.create(),
+        bind(lambda _:dynamodb_table.create_elements(s3_object))
+    )        
+    return result

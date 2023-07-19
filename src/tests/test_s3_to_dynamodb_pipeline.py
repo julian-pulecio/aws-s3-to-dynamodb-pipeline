@@ -1,7 +1,7 @@
 import boto3
 import os
 import re
-from moto import mock_s3
+from moto import mock_s3, mock_dynamodb
 from pytest import fixture
 from unittest import mock
 from src.tests.contents_tests import TRAVELS, CITITES
@@ -19,9 +19,15 @@ def s3():
         s3.create_bucket(Bucket=BUCKET_NAME)
         s3.put_object(
             Bucket=BUCKET_NAME,
-            Body=TRAVELS, Key=S3_OBJECT_KEY
+            Body=CITITES, Key=S3_OBJECT_KEY
         )
         yield s3
+
+@fixture
+def dynamodb():
+    with mock_dynamodb():
+        dynamodb = boto3.client('dynamodb')
+        yield dynamodb
 
 @fixture
 def sqs_event():
@@ -30,5 +36,5 @@ def sqs_event():
     SQS_EVENT['Records'][0]['body'] = s3_event
     return SQS_EVENT
 
-def test_success_response_on_csv_files(s3, sqs_event):
+def test_success_response_on_csv_files(s3, dynamodb, sqs_event):
     populate_dynamodb_table(event=sqs_event, context='')

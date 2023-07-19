@@ -10,6 +10,8 @@ from src.models.s3_bucket import S3_bucket
 class S3_object(S3):
     bucket: S3_bucket = None
     key: str = None
+    content: list[str] = None
+    headers:list[str] = None
 
     def __post_init__(self):
         super().__init__()
@@ -24,12 +26,14 @@ class S3_object(S3):
             raise ValueError('bucket cannot be empty.')
         return True
 
-    @safe(exceptions=(ClientError,))
-    def get_content_from_bucket(self)-> dict:
-        print(self.bucket.name)
-        print(self.key)
+    @safe(exceptions=(IndexError,ClientError))
+    def set_content_from_bucket(self) -> bool:
         response = self.client.get_object(
             Bucket=self.bucket.name,
             Key=self.key
         )
-        return response['Body'].read()
+        content = response['Body'].read()
+        decoded_content = list(filter(None, content.decode('utf-8').split('\n')))
+        self.headers = decoded_content.pop(0).split(',')
+        self.content = [item.split(',') for item in decoded_content]
+        return True
