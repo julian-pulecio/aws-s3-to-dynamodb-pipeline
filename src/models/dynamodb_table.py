@@ -42,7 +42,7 @@ class Dynamodb_table(Dynamodb):
                 TableName=self.name
             )
     
-    @safe(exceptions=(ClientError,))
+    @safe(exceptions=(ClientError,ValueError))
     def create_elements(self, s3_object:S3_object):
         for s3_object_item in s3_object.content:
             self.client.put_item(

@@ -12,7 +12,9 @@ class Dynamodb_attribute(Dynamodb):
         try:
             attribute_type = type(ast.literal_eval(self.value.strip()))
         except ValueError:
-            attribute_type = str        
+            attribute_type = str
+        except SyntaxError:
+            raise ValueError(f'the was an error processing the "{self.value.strip()}" value')  
 
         if attribute_type == str:
             self.attribute_type = 'S'

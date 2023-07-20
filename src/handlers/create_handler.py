@@ -1,5 +1,4 @@
 import json
-import os
 from returns.result import Success
 from returns.pipeline import flow, is_successful
 from returns.pointfree import bind
